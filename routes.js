@@ -1,14 +1,17 @@
-const express = require("express");
+import express from "express";
+import db from "./db.js";
+
 const router = express.Router();
-const db = require("./db");
 
 router.post("/workouts", (req, res) => {
   const { workout_date, workout_notes, bodyweight } = req.body;
 
-  db.run(
+  db.query(
     `
-      INSERT INTO workouts (workout_date, workout_notes, bodyweight)
-      VALUES (?, ?, ?);
+      INSERT INTO workouts 
+      (workout_date, workout_notes, bodyweight)
+      VALUES ($1, $2, $3)
+      RETURNING workout_id;
     `,
     [workout_date, workout_notes, bodyweight],
     (err) => {
@@ -18,7 +21,7 @@ router.post("/workouts", (req, res) => {
         return;
       }
 
-      res.json({ message: "Workout created successfully" });
+      res.json({ id: result.rows[0].workout_id });
     }
   );
 });
@@ -34,12 +37,13 @@ router.post("/exercises", (req, res) => {
     exercise_complete,
     intensity,
     exercise_notes,
+    workout_id,
   } = req.body;
 
-  db.run(
+  db.query(
     `
-      INSERT INTO exercises (exercise_name, exercise_weight, reps, sets, rest_between_sets, exercise_complete, intensity, exercise_notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+      INSERT INTO exercises (exercise_name, exercise_weight, reps, sets, rest_between_sets, exercise_complete, intensity, exercise_notes, workout_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
     `,
     [
       exercise_name,
@@ -50,6 +54,7 @@ router.post("/exercises", (req, res) => {
       exercise_complete,
       intensity,
       exercise_notes,
+      workout_id,
     ],
     (err) => {
       if (err) {
@@ -97,4 +102,4 @@ router.get("/exercises", (req, res) => {
   );
 });
 
-module.exports = router;
+export default router;
