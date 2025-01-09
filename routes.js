@@ -14,7 +14,8 @@ router.post("/workouts", (req, res) => {
       RETURNING workout_id;
     `,
     [workout_date, workout_notes, bodyweight],
-    (err) => {
+
+    (err, result) => {
       if (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
@@ -56,7 +57,7 @@ router.post("/exercises", (req, res) => {
       exercise_notes,
       workout_id,
     ],
-    (err) => {
+    (err, result) => {
       if (err) {
         console.error(err);
         res.status(500).json({ error: err.message });

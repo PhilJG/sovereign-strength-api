@@ -14,65 +14,55 @@ app.use(
 app.use(express.json());
 app.use("/", router);
 
-const createTables = async () => {
-  try {
-    await new Promise((resolve, reject) => {
-      db.query(
-        `
-      CREATE TABLE IF NOT EXISTS workouts (
-        workout_id SERIAL PRIMARY KEY,
-        workout_date TEXT NOT NULL,
-        workout_notes TEXT,
-        bodyweight REAL
-      );
-    `,
-        (err, res) => {
-          if (err) {
-            console.error("Error creating tables:", err);
-          } else {
-            console.log("Tables created successfully");
-          }
-        }
-      );
-    });
+// const createTables = async () => {
+//   try {
+//     await new Promise((resolve, reject) => {
+//       db.query(
+//         `
+//       CREATE TABLE IF NOT EXISTS workouts (
+//         workout_id SERIAL PRIMARY KEY,
+//         workout_date TEXT NOT NULL,
+//         workout_notes TEXT,
+//         bodyweight REAL
+//       );
+//     `,
+//         (err, res) => {
+//           console.error("Error creating tables:", err);
+//         }
+//       );
+//     });
 
-    console.log("workouts table created successfully");
+//     console.log("workouts table created successfully");
 
-    await new Promise((resolve, reject) => {
-      db.query(`
-      CREATE TABLE IF NOT EXISTS exercises (
-        exercise_id SERIAL PRIMARY KEY,
-        exercise_name TEXT NOT NULL,
-        exercise_weight REAL,
-        reps INTEGER,
-        sets INTEGER,
-        rest_between_sets TEXT,
-        exercise_complete INTEGER,
-        intensity INTEGER,
-        exercise_notes TEXT,
-        workout_id INTEGER,
-        FOREIGN KEY (workout_id) REFERENCES workouts(workout_id)
-      );
-    `),
-        console.log("exercises table created successfully");
+//     await new Promise((resolve, reject) => {
+//       db.query(`
+//       CREATE TABLE IF NOT EXISTS exercises (
+//         exercise_id SERIAL PRIMARY KEY,
+//         exercise_name TEXT NOT NULL,
+//         exercise_weight REAL,
+//         reps INTEGER,
+//         sets INTEGER,
+//         rest_between_sets TEXT,
+//         exercise_complete INTEGER,
+//         intensity INTEGER,
+//         exercise_notes TEXT,
+//         workout_id INTEGER,
+//         FOREIGN KEY (workout_id) REFERENCES workouts(workout_id)
+//       );
+//     `),
+//         console.log("exercises table created successfully");
 
-      (err, res) => {
-        if (err) {
-          console.error("Error creating tables:", err);
-        } else {
-          console.log("Tables created successfully");
-        }
-      };
-    });
+//       (err, res) => {
+//         console.error("Error creating tables:", err);
+//       };
+//     });
 
-    // console.log("Tables created successfully");
-  } catch (error) {
-    console.error("Error creating tables:", error);
-  }
-};
+//     // console.log("Tables created successfully");
+//   } catch (error) {
+//     console.error("Error creating tables:", error);
+//   }
+// };
 
-createTables().then(() => {
-  app.listen(3000, () => {
-    console.log("Server listening on port 3000");
-  });
+app.listen(3000, () => {
+  console.log("Server listening on port 3000");
 });
