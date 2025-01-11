@@ -6,6 +6,9 @@ const router = express.Router();
 router.post("/workouts", (req, res) => {
   const { workout_date, workout_notes, bodyweight } = req.body;
 
+  const bodyweightValue = bodyweight === "" ? null : bodyweight;
+  const workoutNotesValue = workout_notes === "" ? null : workout_notes;
+
   db.query(
     `
       INSERT INTO workouts 
@@ -28,25 +31,8 @@ router.post("/workouts", (req, res) => {
 });
 
 router.post("/exercises", (req, res) => {
-  console.log("running post");
-  const {
-    exercise_name,
-    exercise_weight,
-    reps,
-    sets,
-    rest_between_sets,
-    exercise_complete,
-    intensity,
-    exercise_notes,
-    workout_id,
-  } = req.body;
-
-  db.query(
-    `
-      INSERT INTO exercises (exercise_name, exercise_weight, reps, sets, rest_between_sets, exercise_complete, intensity, exercise_notes, workout_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
-    `,
-    [
+  try {
+    const {
       exercise_name,
       exercise_weight,
       reps,
@@ -56,21 +42,42 @@ router.post("/exercises", (req, res) => {
       intensity,
       exercise_notes,
       workout_id,
-    ],
-    (err, result) => {
-      if (err) {
-        console.error(err);
-        res.status(500).json({ error: err.message });
-        return;
-      }
+    } = req.body;
 
-      res.json({ message: `${exercise_name} posted successfully` });
-    }
-  );
+    db.query(
+      `
+        INSERT INTO exercises (exercise_name, exercise_weight, reps, sets, rest_between_sets, exercise_complete, intensity, exercise_notes, workout_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+      `,
+      [
+        exercise_name,
+        exercise_weight,
+        reps,
+        sets,
+        rest_between_sets,
+        exercise_complete,
+        intensity,
+        exercise_notes,
+        workout_id,
+      ],
+      (err, result) => {
+        if (err) {
+          console.error(err);
+          res.status(500).json({ error: err.message });
+          return;
+        }
+
+        res.json({ message: `${exercise_name} posted successfully` });
+      }
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 router.get("/workouts", (req, res) => {
-  db.all(
+  db.query(
     `
       SELECT * FROM workouts;
     `,
@@ -87,7 +94,7 @@ router.get("/workouts", (req, res) => {
 });
 
 router.get("/exercises", (req, res) => {
-  db.all(
+  db.query(
     `
       SELECT * FROM exercises;
     `,
