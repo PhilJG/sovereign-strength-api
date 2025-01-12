@@ -1,7 +1,69 @@
 import express from "express";
+const router = express.Router();
+import { createObjectCsvWriter } from "csv-writer";
+import PDFDocument from "pdfkit";
+import fs from "fs";
 import db from "./db.js";
 
-const router = express.Router();
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const filePath = `${__dirname}/workout_data.csv`;
+
+// Export data
+
+router.get("/csv", async (req, res) => {
+  const data = await db.query(`
+    SELECT * FROM workouts`);
+
+  const workoutlist = data.rows;
+
+  console.log(workoutlist);
+
+  const header = workoutlist.length > 0 ? Object.keys(workoutlist[0]) : [];
+
+  const csvWriter = createObjectCsvWriter({
+    path: "workout_data.csv",
+    header: header,
+  });
+
+  csvWriter
+    .writeRecords(workoutlist)
+    .then(() => {
+      res.download(filePath);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ error: "Error export data to csv" });
+    });
+});
+
+router.get("/export/pdf", async (req, res) => {
+  const data = await db.query(`
+    SELECT * FROM workouts`);
+
+  const doc = new PDFDocument();
+  doc.pipe(fs.createWriteStream("workout_data.pdf"));
+
+  doc.fontSize(25).text("Workout Data", { align: "center" });
+  doc.moveDown();
+
+  data.forEach((row, i) => {
+    doc.fontSize(12).text(`${row.exercise}: ${row.weight} lbs`, {
+      align: "left",
+    });
+    doc.moveDown();
+  });
+
+  doc.end();
+
+  res.download("workout_data.pdf");
+});
+
+// Post data
 
 router.post("/workouts", (req, res) => {
   const { workout_date, workout_notes, bodyweight } = req.body;
@@ -75,6 +137,8 @@ router.post("/exercises", (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Review data
 
 router.get("/workouts", (req, res) => {
   db.query(

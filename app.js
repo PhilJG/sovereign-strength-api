@@ -11,6 +11,7 @@ app.use(
     origin: "http://localhost:5173",
   })
 );
+
 app.use(express.json());
 app.use("/", router);
 
